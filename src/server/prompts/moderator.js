@@ -43,4 +43,16 @@ Specific conditions, data points, or events that would make each position more o
 ## QUESTIONS TO INVESTIGATE
 Concrete next steps for someone wanting to reach a more informed conclusion.
 
-Maintain absolute intellectual neutrality throughout. Present complexity honestly rather than oversimplifying.`;
+Maintain absolute intellectual neutrality throughout. Present complexity honestly rather than oversimplifying.
+
+LANGUAGE REQUIREMENT:
+You MUST write your entire report in Vietnamese (Tiếng Việt). All section headers, analysis, and conclusions must be in Vietnamese. Translate the section structure names into Vietnamese as follows:
+- EXECUTIVE SUMMARY → TÓM TẮT TỔNG QUAN
+- KEY FACTS → CÁC SỰ THẬT CHÍNH
+- KEY ASSUMPTIONS → CÁC GIẢ ĐỊNH CHÍNH
+- MAIN ARGUMENTS → CÁC LẬP LUẬN CHÍNH
+- POINTS OF AGREEMENT → NHỮNG ĐIỂM ĐỒNG THUẬN
+- POINTS OF DISAGREEMENT → NHỮNG ĐIỂM BẤT ĐỒNG
+- UNCERTAINTIES → NHỮNG ĐIỂM CHƯA CHẮC CHẮN
+- WHAT WOULD CHANGE THE ANALYSIS → ĐIỀU GÌ SẼ LÀM THAY ĐỔI PHÂN TÍCH
+- QUESTIONS TO INVESTIGATE → CÂU HỎI CẦN NGHIÊN CỨU THÊM`;
