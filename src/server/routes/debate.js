@@ -14,14 +14,14 @@ router.post('/api-key', (req, res) => {
 });
 
 router.get('/api-key/status', (req, res) => {
-  const hasKey = !!(sessionApiKey || process.env.XKIRO_API_KEY);
+  const hasKey = !!sessionApiKey;
   res.json({ configured: hasKey });
 });
 
 router.post('/debate', async (req, res) => {
   try {
     const { question, rounds, intensity, models, apiKey } = req.body;
-    const effectiveKey = apiKey || sessionApiKey || process.env.XKIRO_API_KEY;
+    const effectiveKey = apiKey || sessionApiKey;
     if (!effectiveKey) {
       return res.status(400).json({ error: 'API key not configured. Enter your XKIRO_API_KEY in Settings.' });
     }

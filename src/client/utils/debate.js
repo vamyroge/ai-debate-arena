@@ -93,7 +93,7 @@ function startDebate() {
   fetch('/api/debate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ question, rounds, intensity, models, apiKey: savedApiKey })
+    body: JSON.stringify(Object.assign({ question, rounds, intensity, models }, savedApiKey ? { apiKey: savedApiKey } : {}))
   }).then(response => {
     if (!response.ok) {
       response.json().then(d => showToast(d.error || 'Error', 'error'));

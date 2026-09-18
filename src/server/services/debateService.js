@@ -17,8 +17,8 @@ const MAX_RETRIES = 2;
 const REQUEST_TIMEOUT = 120000;
 
 function callAI({ model, messages, stream, onChunk, apiKey }) {
-  const key = apiKey || process.env.XKIRO_API_KEY;
-  if (!key) throw new Error('XKIRO_API_KEY not configured');
+  if (!apiKey) throw new Error('API key is missing. Please enter your API key in Settings.');
+  const key = apiKey;
 
   const body = JSON.stringify({ model, messages, stream: stream || false, max_tokens: 4096 });
   const url = new URL('https://api.xkiro.com/v1/chat/completions');
@@ -41,6 +41,7 @@ function callAI({ model, messages, stream, onChunk, apiKey }) {
         let errBody = '';
         res.on('data', chunk => errBody += chunk);
         res.on('end', () => {
+          console.error(`[XKIRO API ERROR] status=${res.statusCode} model=${model} body=${errBody}`);
           const err = new Error(`API error ${res.statusCode}: ${errBody}`);
           err.statusCode = res.statusCode;
           reject(err);
