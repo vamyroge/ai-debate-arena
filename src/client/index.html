@@ -67,7 +67,9 @@
               <select id="rounds-select">
                 <option value="1">1 Round</option>
                 <option value="2">2 Rounds</option>
-                <option value="3" selected>3 Rounds</option>
+                <option value="3">3 Rounds</option>
+                <option value="4">4 Rounds</option>
+                <option value="5" selected>5 Rounds (Full)</option>
               </select>
             </div>
             <div class="control-group">
@@ -93,6 +95,7 @@
                 <label><input type="checkbox" value="minimax/minimax-m3:free" checked> MiniMax (Strategic)</label>
                 <label><input type="checkbox" value="mistralai/mistral-large-2512" checked> Mistral (Devil's Adv.)</label>
                 <label><input type="checkbox" value="mistralai/devstral-medium" checked> Devstral (Independent)</label>
+                <label><input type="checkbox" value="deepseek/deepseek-chat-v3-0324:free" checked> DeepSeek (Critical)</label>
               </div>
             </div>
           </div>
@@ -118,12 +121,18 @@
 
         <section id="debate-section" class="debate-section hidden">
           <div id="timeline" class="timeline">
-            <div class="timeline-step" data-step="0"><span class="step-num">01</span><span class="step-label">Problem</span></div>
-            <div class="timeline-step" data-step="1"><span class="step-num">02</span><span class="step-label">Independent Analysis</span></div>
-            <div class="timeline-step" data-step="2"><span class="step-num">03</span><span class="step-label">Cross Examination</span></div>
-            <div class="timeline-step" data-step="3"><span class="step-num">04</span><span class="step-label">Final Positions</span></div>
-            <div class="timeline-step" data-step="4"><span class="step-num">05</span><span class="step-label">Moderator</span></div>
+            <div class="timeline-step" data-step="0"><span class="step-num">01</span><span class="step-label">Independent</span></div>
+            <div class="timeline-step" data-step="1"><span class="step-num">02</span><span class="step-label">Cross Review</span></div>
+            <div class="timeline-step" data-step="2"><span class="step-num">03</span><span class="step-label">Deep Analysis</span></div>
+            <div class="timeline-step" data-step="3"><span class="step-num">04</span><span class="step-label">Adversarial</span></div>
+            <div class="timeline-step" data-step="4"><span class="step-num">05</span><span class="step-label">Final</span></div>
+            <div class="timeline-step" data-step="5"><span class="step-num">S</span><span class="step-label">Synthesis</span></div>
             <div class="timeline-progress" id="timeline-progress"></div>
+          </div>
+
+          <div class="progress-bar-container" id="progress-bar-container">
+            <div class="progress-bar-fill" id="progress-bar-fill"></div>
+            <span class="progress-bar-text" id="progress-bar-text">0%</span>
           </div>
 
           <div id="agent-cards" class="agent-cards"></div>

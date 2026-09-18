@@ -1,6 +1,14 @@
 let savedApiKey = '';
 window.currentDebateData = null;
 
+const ROUND_LABELS = {
+  1: 'Independent Analysis',
+  2: 'Cross Review',
+  3: 'Deep Analysis',
+  4: 'Adversarial Debate',
+  5: 'Final Reasoning'
+};
+
 async function checkApiKeyStatus() {
   try {
     const r = await fetch('/api/api-key/status');
@@ -46,7 +54,6 @@ function startDebate() {
   if (!question) { showToast('Enter a question first', 'error'); return; }
   const rounds = parseInt(document.getElementById('rounds-select').value);
   const intensity = document.getElementById('intensity-select').value;
-  const length = document.getElementById('length-select').value;
   const checkboxes = document.querySelectorAll('.model-checkboxes input:checked');
   const models = Array.from(checkboxes).map(c => c.value);
   if (models.length === 0) { showToast('Select at least one AI model', 'error'); return; }
@@ -57,7 +64,7 @@ function startDebate() {
   document.getElementById('btn-cancel').classList.remove('hidden');
   document.getElementById('export-bar').classList.add('hidden');
 
-  window.currentDebateData = { question, rounds, intensity, models, round1: {}, round2: {}, round3: {}, moderator: '' };
+  window.currentDebateData = { question, rounds, intensity, models, results: {}, synthesis: '' };
 
   const agentCards = document.getElementById('agent-cards');
   agentCards.innerHTML = '';
@@ -66,7 +73,8 @@ function startDebate() {
     'qwen/qwen3.5-plus:free': { name: 'Qwen', role: 'LOGICAL ANALYST', color: 'var(--qwen)' },
     'minimax/minimax-m3:free': { name: 'MiniMax', role: 'STRATEGIC THINKER', color: 'var(--minimax)' },
     'mistralai/mistral-large-2512': { name: 'Mistral', role: "DEVIL'S ADVOCATE", color: 'var(--mistral)' },
-    'mistralai/devstral-medium': { name: 'Devstral', role: 'INDEPENDENT ANALYST', color: 'var(--devstral)' }
+    'mistralai/devstral-medium': { name: 'Devstral', role: 'INDEPENDENT ANALYST', color: 'var(--devstral)' },
+    'deepseek/deepseek-chat-v3-0324:free': { name: 'DeepSeek', role: 'CRITICAL THINKER', color: 'var(--deepseek)' }
   };
   models.forEach(m => {
     const info = modelInfo[m] || { name: m, role: 'AI', color: 'var(--accent)' };
@@ -77,7 +85,10 @@ function startDebate() {
     agentCards.appendChild(card);
   });
 
+  document.getElementById('rounds-container').innerHTML = '';
+  document.getElementById('synthesis-container').classList.add('hidden');
   updateTimeline(0);
+  updateProgress(0, rounds);
 
   fetch('/api/debate', {
     method: 'POST',
@@ -116,43 +127,59 @@ function startDebate() {
   });
 }
 
+function ensureRoundContainer(round) {
+  const container = document.getElementById('rounds-container');
+  let rc = document.getElementById('round-' + round + '-container');
+  if (!rc) {
+    rc = document.createElement('div');
+    rc.id = 'round-' + round + '-container';
+    rc.className = 'round-container';
+    rc.innerHTML = `<h2 class="round-title">Round ${round} — ${ROUND_LABELS[round] || 'Round ' + round}</h2><div id="round-${round}-panels" class="panels-grid"></div>`;
+    container.appendChild(rc);
+  }
+  return rc;
+}
+
 function handleSSE(data) {
   switch(data.type) {
     case 'round_start':
-      if (data.round === 1) {
-        document.getElementById('round1-container').classList.remove('hidden');
-        updateTimeline(1);
-      } else if (data.round === 2) {
-        document.getElementById('round2-container').classList.remove('hidden');
-        updateTimeline(2);
-      } else if (data.round === 3) {
-        document.getElementById('round3-container').classList.remove('hidden');
-        updateTimeline(3);
-      } else if (data.round === 'moderator') {
-        document.getElementById('moderator-container').classList.remove('hidden');
-        updateTimeline(4);
+      if (data.round === 'synthesis') {
+        document.getElementById('synthesis-container').classList.remove('hidden');
+        updateTimeline(6);
+      } else {
+        ensureRoundContainer(data.round);
+        updateTimeline(data.round);
       }
+      break;
+    case 'progress':
+      updateProgress(data.percent, data.total);
       break;
     case 'agent_status':
       const sid = 'status-' + data.model.replace(/[^a-zA-Z0-9]/g, '');
       const sel = document.getElementById(sid);
-      if (sel) sel.textContent = data.status;
+      if (sel) {
+        sel.textContent = data.status;
+        const card = document.getElementById('card-' + data.model.replace(/[^a-zA-Z0-9]/g, ''));
+        if (card) {
+          card.classList.remove('thinking', 'completed', 'error');
+          if (data.status === 'THINKING') card.classList.add('thinking');
+          else if (data.status === 'COMPLETED') card.classList.add('completed');
+          else if (data.status === 'FAILED') card.classList.add('error');
+        }
+      }
       break;
     case 'stream':
       appendStream(data.model, data.chunk, data.round);
       break;
-    case 'round1_result':
-      if (window.currentDebateData) window.currentDebateData.round1[data.model] = data.content;
+    case 'round_result':
+      if (window.currentDebateData) {
+        if (!window.currentDebateData.results[data.round]) window.currentDebateData.results[data.round] = {};
+        window.currentDebateData.results[data.round][data.model] = data.content;
+      }
       break;
-    case 'round2_result':
-      if (window.currentDebateData) window.currentDebateData.round2[data.model] = data.content;
-      break;
-    case 'round3_result':
-      if (window.currentDebateData) window.currentDebateData.round3[data.model] = data.content;
-      break;
-    case 'moderator_result':
-      if (window.currentDebateData) window.currentDebateData.moderator = data.content;
-      renderModerator(data.content);
+    case 'synthesis_result':
+      if (window.currentDebateData) window.currentDebateData.synthesis = data.content;
+      renderSynthesis(data.content);
       break;
     case 'error':
       showToast(data.message, 'error');
@@ -164,27 +191,48 @@ function handleSSE(data) {
 }
 
 function appendStream(model, chunk, round) {
-  let containerId = '';
-  if (round === 1 || round === '1') containerId = 'round1-panels';
-  else if (round === 2 || round === '2') containerId = 'round2-timeline';
-  else if (round === 3 || round === '3') containerId = 'round3-panels';
-  else if (round === 'moderator') containerId = 'moderator-dashboard';
-  const container = document.getElementById(containerId);
+  if (round === 'synthesis') {
+    const dash = document.getElementById('synthesis-dashboard');
+    if (!dash) return;
+    let panel = document.getElementById('stream-synthesizer');
+    if (!panel) {
+      panel = document.createElement('div');
+      panel.id = 'stream-synthesizer';
+      panel.className = 'stream-panel';
+      panel.innerHTML = '<h4>Synthesizer</h4><div class="stream-content"></div>';
+      dash.appendChild(panel);
+    }
+    const content = panel.querySelector('.stream-content');
+    if (content) content.textContent += chunk;
+    return;
+  }
+
+  ensureRoundContainer(round);
+  const container = document.getElementById('round-' + round + '-panels');
   if (!container) return;
-  let panel = document.getElementById('stream-' + model.replace(/[^a-zA-Z0-9]/g, '') + '-' + round);
+  const safeId = model.replace(/[^a-zA-Z0-9]/g, '');
+  let panel = document.getElementById('stream-' + safeId + '-' + round);
   if (!panel) {
     panel = document.createElement('div');
-    panel.id = 'stream-' + model.replace(/[^a-zA-Z0-9]/g, '') + '-' + round;
+    panel.id = 'stream-' + safeId + '-' + round;
     panel.className = 'stream-panel';
-    panel.innerHTML = '<h4>' + model + '</h4><div class="stream-content"></div>';
+    const modelInfo = {
+      'qwen/qwen3.5-plus:free': { name: 'Qwen', color: 'var(--qwen)' },
+      'minimax/minimax-m3:free': { name: 'MiniMax', color: 'var(--minimax)' },
+      'mistralai/mistral-large-2512': { name: 'Mistral', color: 'var(--mistral)' },
+      'mistralai/devstral-medium': { name: 'Devstral', color: 'var(--devstral)' },
+      'deepseek/deepseek-chat-v3-0324:free': { name: 'DeepSeek', color: 'var(--deepseek)' }
+    };
+    const info = modelInfo[model] || { name: model, color: 'var(--accent)' };
+    panel.innerHTML = `<h4 style="color:${info.color}">${info.name}</h4><div class="stream-content"></div>`;
     container.appendChild(panel);
   }
   const content = panel.querySelector('.stream-content');
   if (content) content.textContent += chunk;
 }
 
-function renderModerator(content) {
-  const dash = document.getElementById('moderator-dashboard');
+function renderSynthesis(content) {
+  const dash = document.getElementById('synthesis-dashboard');
   if (!dash) return;
   dash.innerHTML = '';
   const sections = content.split(/\n## /);
@@ -202,14 +250,26 @@ function renderModerator(content) {
 function updateTimeline(step) {
   document.querySelectorAll('.timeline-step').forEach((el, i) => {
     el.classList.toggle('active', i <= step);
+    el.classList.toggle('completed', i < step);
   });
   const prog = document.getElementById('timeline-progress');
-  if (prog) prog.style.width = (step / 4 * 100) + '%';
+  if (prog) prog.style.width = (step / 5 * 100) + '%';
+}
+
+function updateProgress(percent, totalRounds) {
+  const container = document.getElementById('progress-bar-container');
+  const fill = document.getElementById('progress-bar-fill');
+  const text = document.getElementById('progress-bar-text');
+  if (!container || !fill || !text) return;
+  container.classList.remove('hidden');
+  fill.style.width = percent + '%';
+  text.textContent = percent + '%';
 }
 
 function finishDebate() {
   resetButtons();
   document.getElementById('export-bar').classList.remove('hidden');
+  updateProgress(100, 5);
   if (window.currentDebateData) saveToHistory(window.currentDebateData);
   showToast('Debate complete!', 'success');
 }

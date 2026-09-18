@@ -34,18 +34,12 @@ router.post('/debate', async (req, res) => {
       return res.status(400).json({ error: 'Question too long (max 2000 chars)' });
     }
 
-    const validRounds = [1, 2, 3];
-    const numRounds = validRounds.includes(rounds) ? rounds : 3;
+    const numRounds = Math.min(Math.max(parseInt(rounds) || 5, 1), 5);
 
     const validIntensities = ['normal', 'deep', 'extreme'];
     const debateIntensity = validIntensities.includes(intensity) ? intensity : 'normal';
 
-    const availableModels = [
-      'qwen/qwen3.5-plus:free',
-      'minimax/minimax-m3:free',
-      'mistralai/mistral-large-2512',
-      'mistralai/devstral-medium'
-    ];
+    const availableModels = debateService.DEFAULT_MODELS;
 
     let selectedModels = availableModels;
     if (Array.isArray(models) && models.length > 0) {

@@ -23,6 +23,7 @@
   --minimax: #8b5cf6;
   --mistral: #f97316;
   --devstral: #06b6d4;
+  --deepseek: #10b981;
   --moderator: #ec4899;
   --radius: 12px;
   --radius-sm: 8px;
@@ -452,9 +453,65 @@ body {
 
 .agent-cards {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 12px;
   margin-bottom: 32px;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 28px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--qwen), var(--minimax), var(--mistral), var(--devstral), var(--deepseek));
+  border-radius: var(--radius-sm);
+  transition: width 0.5s ease;
+  width: 0%;
+}
+
+.progress-bar-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 1px;
+}
+
+.stream-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.stream-panel h4 {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.stream-content {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
 .agent-card {
@@ -805,9 +862,63 @@ body {
   background: var(--border-hover);
 }
 
+.stream-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.stream-panel h4 {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.stream-content {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 28px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--qwen), var(--minimax), var(--mistral), var(--devstral), var(--deepseek));
+  border-radius: var(--radius-sm);
+  transition: width 0.5s ease;
+  width: 0%;
+}
+
+.progress-bar-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 1px;
+}
+
 @media (max-width: 1024px) {
   .agent-cards {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
   .panels-grid {
     grid-template-columns: 1fr;
@@ -833,7 +944,7 @@ body {
     padding: 60px 16px 16px;
   }
   .agent-cards {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
   .controls-panel {
     grid-template-columns: 1fr;
@@ -854,6 +965,7 @@ body {
 .minimax-color { color: var(--minimax); }
 .mistral-color { color: var(--mistral); }
 .devstral-color { color: var(--devstral); }
+.deepseek-color { color: var(--deepseek); }
 .moderator-color { color: var(--moderator); }
 
 .streaming-cursor::after {
