@@ -1,4 +1,4 @@
-let savedApiKey = '';
+let savedApiKey = localStorage.getItem('xkiro_api_key') || '';
 window.currentDebateData = null;
 
 const ROUND_LABELS = {
@@ -10,19 +10,15 @@ const ROUND_LABELS = {
 };
 
 async function checkApiKeyStatus() {
-  try {
-    const r = await fetch('/api/api-key/status');
-    const d = await r.json();
-    const s = document.getElementById('api-key-status');
-    const section = document.getElementById('api-key-section');
-    if (d.configured) {
-      if (s) { s.textContent = 'API key configured'; s.style.color = 'var(--success)'; }
-      if (section) section.classList.add('hidden');
-    } else {
-      if (s) { s.textContent = 'API key required'; s.style.color = 'var(--error)'; }
-      if (section) section.classList.remove('hidden');
-    }
-  } catch(e) {}
+  const s = document.getElementById('api-key-status');
+  const section = document.getElementById('api-key-section');
+  if (savedApiKey) {
+    if (s) { s.textContent = 'API key configured'; s.style.color = 'var(--success)'; }
+    if (section) section.classList.add('hidden');
+  } else {
+    if (s) { s.textContent = 'API key required'; s.style.color = 'var(--error)'; }
+    if (section) section.classList.remove('hidden');
+  }
 }
 
 async function saveApiKey() {
@@ -37,6 +33,7 @@ async function saveApiKey() {
     });
     if (r.ok) {
       savedApiKey = k;
+      localStorage.setItem('xkiro_api_key', k);
       showToast('API key saved successfully!', 'success');
       const section = document.getElementById('api-key-section');
       if (section) section.classList.add('hidden');
@@ -93,7 +90,7 @@ function startDebate() {
   fetch('/api/debate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(Object.assign({ question, rounds, intensity, models }, savedApiKey ? { apiKey: savedApiKey } : {}))
+    body: JSON.stringify({ question, rounds, intensity, models, apiKey: savedApiKey })
   }).then(response => {
     if (!response.ok) {
       response.json().then(d => showToast(d.error || 'Error', 'error'));

@@ -2,29 +2,25 @@ const express = require('express');
 const router = express.Router();
 const debateService = require('../services/debateService');
 
-let sessionApiKey = '';
-
 router.post('/api-key', (req, res) => {
   const { key } = req.body;
   if (!key || typeof key !== 'string') {
     return res.status(400).json({ error: 'API key is required' });
   }
-  sessionApiKey = key.trim();
   res.json({ status: 'ok' });
 });
 
 router.get('/api-key/status', (req, res) => {
-  const hasKey = !!sessionApiKey;
-  res.json({ configured: hasKey });
+  res.json({ configured: false });
 });
 
 router.post('/debate', async (req, res) => {
   try {
     const { question, rounds, intensity, models, apiKey } = req.body;
-    const effectiveKey = apiKey || sessionApiKey;
-    if (!effectiveKey) {
+    if (!apiKey) {
       return res.status(400).json({ error: 'API key not configured. Enter your XKIRO_API_KEY in Settings.' });
     }
+    const effectiveKey = apiKey;
 
     if (!question || typeof question !== 'string' || question.trim().length === 0) {
       return res.status(400).json({ error: 'Question is required' });
