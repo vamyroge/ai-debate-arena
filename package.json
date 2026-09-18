@@ -1,7 +1,7 @@
 {
-  "name": "ai-debate-arena",
+  "name": "tryeu-multiagents",
   "version": "1.0.0",
-  "description": "AI Debate Arena - Multi-AI debate platform",
+  "description": "TRYEU MULTIAGENTS - Multi-AI debate platform",
   "main": "src/server/index.js",
   "scripts": {
     "dev": "node src/server/index.js",
