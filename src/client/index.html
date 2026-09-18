@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Debate Arena</title>
+  <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+  <div id="app">
+    <aside id="sidebar">
+      <div class="sidebar-header">
+        <h2>ARENA</h2>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-view="home" onclick="showView('home')">
+          <span class="nav-icon">&#9670;</span> New Debate
+        </button>
+        <button class="nav-item" data-view="history" onclick="showView('history')">
+          <span class="nav-icon">&#9632;</span> Debate History
+        </button>
+        <button class="nav-item" data-view="saved" onclick="showView('saved')">
+          <span class="nav-icon">&#9733;</span> Saved Debates
+        </button>
+        <button class="nav-item" data-view="settings" onclick="showView('settings')">
+          <span class="nav-icon">&#9881;</span> Settings
+        </button>
+      </nav>
+    </aside>
+
+    <main id="main-content">
+      <div id="view-home" class="view active">
+        <header class="main-header">
+          <h1>AI DEBATE ARENA</h1>
+          <p class="subtitle">Let multiple AI systems challenge each other.</p>
+        </header>
+
+        <section class="api-key-section" id="api-key-section">
+          <div class="input-container" style="border-color: rgba(239,68,68,0.3); margin-bottom: 20px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <input type="password" id="api-key-input" placeholder="Enter your XKIRO API Key..." style="flex:1;background:none;border:none;color:var(--text-primary);font-size:14px;font-family:var(--font);outline:none;">
+              <button id="btn-save-key" class="btn-primary" onclick="saveApiKey()" style="padding:8px 16px;font-size:12px;">Save Key</button>
+            </div>
+            <div id="api-key-status" style="font-size:11px;color:var(--text-muted);margin-top:6px;"></div>
+          </div>
+        </section>
+        <section class="input-section">
+          <div class="input-container">
+            <textarea id="question-input" placeholder="What problem do you want the AI panel to debate?" rows="3"></textarea>
+            <div class="input-actions">
+              <div class="presets">
+                <button class="preset-btn" onclick="setPreset('education')">Education</button>
+                <button class="preset-btn" onclick="setPreset('career')">Career</button>
+                <button class="preset-btn" onclick="setPreset('technology')">Technology</button>
+                <button class="preset-btn" onclick="setPreset('business')">Business</button>
+                <button class="preset-btn" onclick="setPreset('personal')">Personal Decision</button>
+                <button class="preset-btn" onclick="setPreset('society')">Society</button>
+                <button class="preset-btn" onclick="setPreset('science')">Science</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="controls-panel">
+            <div class="control-group">
+              <label>Rounds</label>
+              <select id="rounds-select">
+                <option value="1">1 Round</option>
+                <option value="2">2 Rounds</option>
+                <option value="3" selected>3 Rounds</option>
+              </select>
+            </div>
+            <div class="control-group">
+              <label>Intensity</label>
+              <select id="intensity-select">
+                <option value="normal">Normal</option>
+                <option value="deep" selected>Deep</option>
+                <option value="extreme">Extreme</option>
+              </select>
+            </div>
+            <div class="control-group">
+              <label>Response Length</label>
+              <select id="length-select">
+                <option value="short">Short</option>
+                <option value="medium" selected>Medium</option>
+                <option value="long">Long</option>
+              </select>
+            </div>
+            <div class="control-group models-group">
+              <label>AI Models</label>
+              <div class="model-checkboxes">
+                <label><input type="checkbox" value="qwen/qwen3.5-plus:free" checked> Qwen (Logical)</label>
+                <label><input type="checkbox" value="minimax/minimax-m3:free" checked> MiniMax (Strategic)</label>
+                <label><input type="checkbox" value="mistralai/mistral-large-2512" checked> Mistral (Devil's Adv.)</label>
+                <label><input type="checkbox" value="mistralai/devstral-medium" checked> Devstral (Independent)</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="action-buttons">
+            <button id="btn-start" class="btn-primary" onclick="startDebate()">START DEBATE</button>
+            <button id="btn-pause" class="btn-secondary hidden" onclick="pauseDebate()">PAUSE</button>
+            <button id="btn-cancel" class="btn-danger hidden" onclick="cancelDebate()">CANCEL</button>
+            <button id="btn-restart" class="btn-secondary hidden" onclick="restartDebate()">RESTART</button>
+          </div>
+        </section>
+
+        <section id="demo-section" class="demo-section">
+          <h3>Try a sample debate:</h3>
+          <div class="demo-list">
+            <button class="demo-btn" onclick="loadDemo(0)">Có nên mua PC 20 triệu để học AI?</button>
+            <button class="demo-btn" onclick="loadDemo(1)">Đại học hay đi làm sớm?</button>
+            <button class="demo-btn" onclick="loadDemo(2)">AI có làm thay đổi nghề lập trình trong 5 năm tới không?</button>
+            <button class="demo-btn" onclick="loadDemo(3)">Startup nên tập trung sản phẩm hay doanh thu trước?</button>
+            <button class="demo-btn" onclick="loadDemo(4)">Có nên học nhiều kỹ năng cùng lúc hay tập trung một kỹ năng?</button>
+          </div>
+        </section>
+
+        <section id="debate-section" class="debate-section hidden">
+          <div id="timeline" class="timeline">
+            <div class="timeline-step" data-step="0"><span class="step-num">01</span><span class="step-label">Problem</span></div>
+            <div class="timeline-step" data-step="1"><span class="step-num">02</span><span class="step-label">Independent Analysis</span></div>
+            <div class="timeline-step" data-step="2"><span class="step-num">03</span><span class="step-label">Cross Examination</span></div>
+            <div class="timeline-step" data-step="3"><span class="step-num">04</span><span class="step-label">Final Positions</span></div>
+            <div class="timeline-step" data-step="4"><span class="step-num">05</span><span class="step-label">Moderator</span></div>
+            <div class="timeline-progress" id="timeline-progress"></div>
+          </div>
+
+          <div id="agent-cards" class="agent-cards"></div>
+
+          <div id="round1-container" class="round-container hidden">
+            <h2 class="round-title">Round 1 — Independent Analysis</h2>
+            <div id="round1-panels" class="panels-grid"></div>
+          </div>
+
+          <div id="round2-container" class="round-container hidden">
+            <h2 class="round-title">Round 2 — Cross Examination</h2>
+            <div id="round2-timeline" class="debate-timeline"></div>
+          </div>
+
+          <div id="round3-container" class="round-container hidden">
+            <h2 class="round-title">Round 3 — Final Positions</h2>
+            <div id="round3-panels" class="panels-grid"></div>
+          </div>
+
+          <div id="moderator-container" class="round-container hidden">
+            <h2 class="round-title">Moderator Synthesis</h2>
+            <div id="moderator-dashboard" class="moderator-dashboard"></div>
+          </div>
+
+          <div class="export-bar hidden" id="export-bar">
+            <button onclick="copyDebate()" class="btn-secondary">Copy Debate</button>
+            <button onclick="exportMarkdown()" class="btn-secondary">Export Markdown</button>
+            <button onclick="exportJSON()" class="btn-secondary">Export JSON</button>
+          </div>
+        </section>
+      </div>
+
+      <div id="view-history" class="view hidden">
+        <header class="main-header">
+          <h1>DEBATE HISTORY</h1>
+        </header>
+        <div id="history-list" class="history-list"></div>
+      </div>
+
+      <div id="view-saved" class="view hidden">
+        <header class="main-header">
+          <h1>SAVED DEBATES</h1>
+        </header>
+        <div id="saved-list" class="history-list"></div>
+      </div>
+
+      <div id="view-settings" class="view hidden">
+        <header class="main-header">
+          <h1>SETTINGS</h1>
+        </header>
+        <div class="settings-panel">
+          <p>API configuration is managed server-side via environment variables.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast-container"></div>
+  <div id="mobile-overlay" class="hidden" onclick="toggleSidebar()"></div>
+  <button id="mobile-menu-btn" onclick="toggleSidebar()">&#9776;</button>
+
+  <script src="/components/ui.js"></script>
+  <script src="/utils/debate.js"></script>
+  <script src="/utils/export.js"></script>
+  <script src="/utils/history.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

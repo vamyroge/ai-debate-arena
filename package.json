@@ -1,0 +1,15 @@
+{
+  "name": "ai-debate-arena",
+  "version": "1.0.0",
+  "description": "AI Debate Arena - Multi-AI debate platform",
+  "main": "src/server/index.js",
+  "scripts": {
+    "dev": "node src/server/index.js",
+    "start": "node src/server/index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "dotenv": "^16.3.1",
+    "cors": "^2.8.5"
+  }
+}
